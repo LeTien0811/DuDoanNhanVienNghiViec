@@ -19,7 +19,7 @@ class DuDoanNhanVienServices:
             if not check:
                 return False
         
-    def ĐuDoanNhanVien(self, satisfaction_level, last_evaluation, number_project,
+    def DuDoanNhanVien(self, satisfaction_level, last_evaluation, number_project,
                         average_montly_hours, time_spend_company, Work_accident,
                         promotion_last_5years, Department, salary):
         # tao data frame rong voi cac cot cua mo hinh
@@ -37,6 +37,7 @@ class DuDoanNhanVienServices:
         input_data['Department'] = Department
         input_data['salary'] = salary
 
+        # Tien xu ly du lieu
         # xu ly thong tin ve phong ban va muc luong 
         department_column = 'Department_' + Department
         if department_column in input_data.columns:
