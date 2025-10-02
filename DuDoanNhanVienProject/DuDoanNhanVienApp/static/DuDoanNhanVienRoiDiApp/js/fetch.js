@@ -3,17 +3,12 @@ export async function fetchAPI(action = "", method = "GET", data = null, isFile 
     try {
         const url = `${api}${action}`;
         const option = {
-            Headers: {
-                "Content-Type": "application/json",
-            },
             method,
         }
-        if(data !== null && method !== 'GET' && isFile === false) {
-            option.body = JSON.stringify(data);
-        } else if(data !== null && method !== 'GET' && isFile === true) {
+        if(data !== null && method !== 'GET') {
             option.body = data;
-        }
-
+        } 
+        console.log(option);
         const response = await fetch(url, option);
         if(!response.ok) {
             const resultText = await response.text();
@@ -24,9 +19,10 @@ export async function fetchAPI(action = "", method = "GET", data = null, isFile 
         if(!resultData.error){
             console.log("Thanh Cong: ", resultData);
             return resultData.data;
-        }
-            console.log("Co loi Xay Ra: ", resultData.message);
-            return null;
+        }   
+        console.log("Loi: ", resultData);
+        console.log("Co loi Xay Ra: ", resultData.error);
+        return null;
     } catch (error) {
         console.log("Co Loi Xay Ra O Fetch: ", error.message);
         return;

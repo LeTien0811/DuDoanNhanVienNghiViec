@@ -5,12 +5,14 @@ from DuDoanNhanVienApp.services.TrainModelDuDoanNhanVienServices import TrainMod
 from DuDoanNhanVienApp.services.DuDoanNhanVienServices import DuDoanNhanVienServices
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+import json
 
 @csrf_exempt
 # Create your views here.
 def indexs(request):
     template = loader.get_template("Home.html");
     return HttpResponse(template.render())
+
 @csrf_exempt
 def Trainning(request):
     if request.method == "POST" and request.FILES.get("TrainDataFile"):
@@ -30,7 +32,7 @@ def Trainning(request):
             }, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-    return JsonResponse({"error": "Exception error"}, status=400) 
+    return JsonResponse({"error": "method error"}, status=400) 
 
 @csrf_exempt
 def DuDoanRoiDiText(request):
@@ -44,12 +46,24 @@ def DuDoanRoiDiText(request):
         promotion_last_5years = request.POST.get("promotion_last_5years")
         Department = request.POST.get("Department")
         salary = request.POST.get("salary")
-        if not satisfaction_level or not last_evaluation or not number_project or not average_montly_hours or not time_spend_company or not Work_accident or not promotion_last_5years or not Department or not salary:
+        fields = [satisfaction_level, last_evaluation, number_project, average_montly_hours,
+                  time_spend_company, Work_accident, promotion_last_5years, Department, salary]
+        if any(f is None or f == "" for f in fields):
             return JsonResponse({"error": "empty"}, status=400)
+
         try:
-            
             DuDoanIng = DuDoanNhanVienServices()
-            result = DuDoanIng.DuDoanNhanVienText(satisfaction_level, last_evaluation, number_project, average_montly_hours, time_spend_company, Work_accident, promotion_last_5years, Department, salary)
+            result = DuDoanIng.DuDoanNhanVienText(
+                float(satisfaction_level),
+                float(last_evaluation),
+                int(number_project),
+                int(average_montly_hours),
+                int(time_spend_company),
+                int(Work_accident),
+                int(promotion_last_5years),
+                Department,
+                salary
+            )
             if result == False:
                 error = DuDoanIng.ShowError()
                 return JsonResponse({
@@ -61,4 +75,4 @@ def DuDoanRoiDiText(request):
             }, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-    return JsonResponse({"error": "Exception error"}, status=400) 
+    return JsonResponse({"error": "method error"}, status=400) 

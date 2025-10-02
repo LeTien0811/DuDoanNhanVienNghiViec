@@ -29,7 +29,7 @@ class DuDoanNhanVienServices:
                         promotion_last_5years, Department, salary):
         try:
             # tao data frame rong voi cac cot cua mo hinh
-            input_data = pd.DataFrame(self.model_columns)
+            input_data = pd.DataFrame(columns=self.model_columns)
             input_data.loc[0] = 0
 
             # dien thong tin vao
@@ -40,52 +40,59 @@ class DuDoanNhanVienServices:
             input_data['time_spend_company'] = time_spend_company
             input_data['Work_accident'] = Work_accident
             input_data['promotion_last_5years'] = promotion_last_5years
-            input_data['Department'] = Department
-            input_data['salary'] = salary
 
             # Tien xu ly du lieu
             # xu ly thong tin ve phong ban va muc luong 
             department_column = 'Department_' + Department
             if department_column in input_data.columns:
-                input_data[department_column] = 1
+                input_data.at[0,department_column] = 1
         
             salary_column = 'salary_' + salary
             if salary_column in input_data.columns:
-                input_data[salary_column] = 1
+                input_data.at[0,salary_column] = 1
 
             resultData = []
 
             # thuc hien du doan predict sẽ trả vê 0 hoac 1 o lại hoặc rời đ
-            RandomForest_KhaNangRoiDi = self.RandomForest_model.predict(input_data)[0]
+            RandomForest_predict = self.RandomForest_model.predict(input_data)[0]
             # predict_probe trả ve xác suất
-            RandomForest_probability = self.RandomForest_model.predict_proba(input_data)[0][1]
-            RandomForest_XacXuatPhanTram = round(RandomForest_probability * 100, 2)
+            RandomForest_predict_proba = self.RandomForest_model.predict_proba(input_data)[0]
             resultData.append( 
                 {"Random_forest":{
-                    "KhaNangRoiDi": RandomForest_KhaNangRoiDi, 
-                    "XacXuatPhanTram": RandomForest_DuDoanNhanVienServicesXacXuatPhanTram
+                    "du_doan_roi_di": int(RandomForest_predict), 
+                    "phan_tram_roi_di": float(RandomForest_predict_proba[1]),
+                    "do_tin_cay_cua_du_doan": float(RandomForest_predict_proba[RandomForest_predict])
                 }}
             )
 
-            Knn_KhaNangRoiDi = self.Knn_model.predict(input_data)[0]
-            Knn_probability = self.Knn_model.predict_proba(input_data)[0][1]
-            Knn_XacXuatPhanTram = round(Knn_probability * 100, 2)
+            Knn_predict = self.Knn_model.predict(input_data)[0]
+            Knn_predict_proba = self.Knn_model.predict_proba(input_data)[0]
+            
             resultData.append( 
                 {"Knn":{
-                    "KhaNangRoiDi": Knn_KhaNangRoiDi, 
-                    "XacXuatPhanTram": Knn_XacXuatPhanTram
+                    "du_doan_roi_di": int(Knn_predict), 
+                    "phan_tram_roi_di": float(Knn_predict_proba[1]),
+                    "do_tin_cay_cua_du_doan": float(Knn_predict_proba[Knn_predict])
                 }}
             )
 
-            Svc_KhaNangRoiDi = self.Svc_model.predict(input_data)[0]
-            Svc_probability = self.Svc_model.predict_proba(input_data)[0][1]
-            Svc_XacXuatPhanTram = round(Svc_probability * 100, 2)
-            resultData.append( 
-                {"Svc":{
-                    "KhaNangRoiDi": Svc_KhaNangRoiDi, 
-                    "XacXuatPhanTram": Svc_XacXuatPhanTram
-                }}
-            )
+            svc_prediction = self.Svc_model.predict(input_data)[0]
+            try:
+                svc_probabilities = self.Svc_model.predict_proba(input_data)[0]
+                svc_phan_tram_roi_di = float(svc_probabilities[1])
+                svc_do_tin_cay = float(svc_probabilities[svc_prediction])
+            except AttributeError:
+            # Nếu không có predict_proba, ta không thể cung cấp xác suất
+                svc_phan_tram_roi_di = None 
+                svc_do_tin_cay = 1.0 # Có thể mặc định là 1.0 vì predict không có xác suất đi kèm
+
+            resultData.append({
+                "Svc": {
+                "du_doan_roi_di": int(svc_prediction),
+                "phan_tram_roi_di": svc_phan_tram_roi_di,
+                "do_tin_cay_cua_du_doan": svc_do_tin_cay
+            }
+            })
             if not resultData:
                 return False
             return resultData

@@ -60,7 +60,7 @@ class TrainModelDuDoanNhanVienServices():
             },}
             ResultData.append(knn_data)
 
-            svc_model = SVC(random_state=42)
+            svc_model = SVC(random_state=42, probability=True)
             svc_model.fit(x_train, y_train)
             svc_preds = svc_model.predict(x_test)
             svc_data = {"Svc": {
